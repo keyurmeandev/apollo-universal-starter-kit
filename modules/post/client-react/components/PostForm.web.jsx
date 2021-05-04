@@ -4,7 +4,7 @@ import { withFormik } from 'formik';
 import { translate } from '@gqlapp/i18n-client-react';
 import { FieldAdapter as Field } from '@gqlapp/forms-client-react';
 import { required, validate } from '@gqlapp/validation-common-react';
-import { Form, RenderField, Button } from '@gqlapp/look-client-react';
+import { Form, RenderField, Button, Media } from '@gqlapp/look-client-react';
 
 const postFormSchema = {
   title: [required],
@@ -22,6 +22,15 @@ const PostForm = ({ values, handleSubmit, submitting, t }) => {
         label={t('post.field.content')}
         value={values.content}
       />
+
+
+      <Media>
+        <Media left href="#">
+          <Media object alt="Generic" />
+        </Media>
+      </Media>
+      <Field name="Image" component={RenderField} type="file" label={t('post.field.image')} value={values.image} />
+
       <Button color="primary" type="submit" disabled={submitting}>
         {t('post.btn.submit')}
       </Button>
@@ -41,7 +50,8 @@ PostForm.propTypes = {
 const PostFormWithFormik = withFormik({
   mapPropsToValues: props => ({
     title: props.post && props.post.title,
-    content: props.post && props.post.content
+    content: props.post && props.post.content,
+    // image: props.image && props.post.image
   }),
   validate: values => validate(values, postFormSchema),
   handleSubmit(
