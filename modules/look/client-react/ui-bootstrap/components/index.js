@@ -24,4 +24,5 @@ export { default as ListGroup } from './ListGroup';
 export { default as ListItem } from './ListItem';
 export { default as LanguagePicker } from './LanguagePicker';
 export { default as Pagination } from './Pagination';
+export { default as Media } from './Media';
 export { onAppCreate } from './NavBar';
