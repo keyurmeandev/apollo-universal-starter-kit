@@ -9,7 +9,7 @@ import resources from './locales';
 
 const NavLinkWithI18n = translate()(({ t }) => (
   <NavLink to="/pagination" className="nav-link" activeClassName="active">
-    {t('pagination:navLink')}
+      {t('pagination:navLink')}
   </NavLink>
 ));
 
