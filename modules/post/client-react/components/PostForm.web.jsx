@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { withFormik } from 'formik';
 import { translate } from '@gqlapp/i18n-client-react';
@@ -8,10 +8,27 @@ import { Form, RenderField, Button, Media } from '@gqlapp/look-client-react';
 
 const postFormSchema = {
   title: [required],
-  content: [required]
+  content: [required],
+  image: [required]
 };
 
 const PostForm = ({ values, handleSubmit, submitting, t }) => {
+  const [image, setImage] = useState();
+  const handleImage = function (value, ev) {
+    ev.preventDefault();
+    console.log(`PostForm: handle image running`, value);
+    // Assuming only image
+    var file = ev.target.files[0];
+    var reader = new FileReader();
+    var url = reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      let image = [reader.result];
+      setImage(image);
+    };
+    console.log(url); // Would see a path?
+    // setImage(e.target.files[0]);
+  };
+
   return (
     <Form name="post" onSubmit={handleSubmit}>
       <Field name="title" component={RenderField} type="text" label={t('post.field.title')} value={values.title} />
@@ -22,14 +39,20 @@ const PostForm = ({ values, handleSubmit, submitting, t }) => {
         label={t('post.field.content')}
         value={values.content}
       />
-
-
       <Media>
-        <Media left href="#">
-          <Media object alt="Generic" />
-        </Media>
+
+        <Media object data-src={image} src={image} alt="Generic" />
+
       </Media>
-      <Field name="Image" component={RenderField} type="file" label={t('post.field.image')} value={values.image} />
+      <Field
+        type="file"
+        name="Image"
+        component={RenderField}
+
+        label={t('post.field.image')}
+        // value={values.image}
+        onChange={handleImage}
+      />
 
       <Button color="primary" type="submit" disabled={submitting}>
         {t('post.btn.submit')}
@@ -40,6 +63,7 @@ const PostForm = ({ values, handleSubmit, submitting, t }) => {
 
 PostForm.propTypes = {
   handleSubmit: PropTypes.func,
+  //handleImage: PropTypes.func,
   onSubmit: PropTypes.func,
   submitting: PropTypes.bool,
   values: PropTypes.object,
@@ -51,7 +75,7 @@ const PostFormWithFormik = withFormik({
   mapPropsToValues: props => ({
     title: props.post && props.post.title,
     content: props.post && props.post.content,
-    // image: props.image && props.post.image
+    image: props.image && props.post.image
   }),
   validate: values => validate(values, postFormSchema),
   handleSubmit(
