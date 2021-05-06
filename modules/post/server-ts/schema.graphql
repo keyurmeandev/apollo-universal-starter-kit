@@ -3,6 +3,7 @@ type Post {
   id: Int!
   title: String!
   content: String!
+  image: String
   comments: [Comment]
 }
 
@@ -57,6 +58,7 @@ extend type Mutation {
 input AddPostInput {
   title: String!
   content: String!
+  image: [FileUpload]!
 }
 
 # Input for editPost Mutation
