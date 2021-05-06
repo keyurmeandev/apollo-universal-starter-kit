@@ -3,6 +3,7 @@ import { knex, returnId, orderedFor } from '@gqlapp/database-server-ts';
 export interface Post {
   title: string;
   content: string;
+  image: string;
 }
 
 export interface Comment {
@@ -17,7 +18,7 @@ export interface Identifier {
 export default class PostDAO {
   public postsPagination(limit: number, after: number) {
     return knex
-      .select('id', 'title', 'content')
+      .select('id', 'title', 'content', 'image')
       .from('post')
       .orderBy('id', 'desc')
       .limit(limit)
@@ -41,7 +42,7 @@ export default class PostDAO {
 
   public post(id: number) {
     return knex
-      .select('id', 'title', 'content')
+      .select('id', 'title', 'content', 'image')
       .from('post')
       .where('id', '=', id)
       .first();
