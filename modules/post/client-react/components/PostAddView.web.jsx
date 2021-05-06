@@ -10,7 +10,7 @@ import settings from '@gqlapp/config';
 import PostForm from './PostForm';
 
 const onSubmit = addPost => values => {
-  addPost(values.title, values.content);
+  addPost(values.title, values.content, values.image);
 };
 
 const PostAddView = ({ addPost, t }) => {
