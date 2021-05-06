@@ -1,7 +1,15 @@
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import { createBatchResolver } from 'graphql-resolve-batch';
+import fileSystemStorage, { UploadFileStream } from './FileSystemStorage';
+// import { UploadFileStream } from '@gqlapp/upload-server-ts';
+import settings from '@gqlapp/config';
+
 // interfaces
 import { Post, Comment, Identifier } from './sql';
+
+interface UploadFileStreams {
+  image: Promise<UploadFileStream>;
+}
 
 interface Edges {
   cursor: number;
@@ -14,7 +22,7 @@ interface PostsParams {
 }
 
 interface PostInput {
-  input: Post;
+  input: Post & UploadFileStreams;
 }
 
 interface PostInputWithId {
@@ -69,6 +77,25 @@ export default (pubsub: PubSub) => ({
   },
   Mutation: {
     async addPost(obj: any, { input }: PostInput, context: any) {
+      // console.log(`server side called resolver: **************`, input);
+      // load files to fs
+      // const uploadedImage = await Promise.all(
+      //   fileSystemStorage.save(await input.image, settings.upload.postUploadDir)
+      // );
+      var filename = '';
+      const uploadedImage = await Promise.all(
+        input.image.map(async uploadPromise => {
+          var {filename: fileName} = await uploadPromise;
+          filename = fileName;
+          fileSystemStorage.save(await uploadPromise, settings.upload.postUploadDir);
+        })
+      );
+
+      if(!uploadedImage){
+        console.log(`***Error*** addPost: Post image not uploaded...`);
+        throw new Error(`***Error*** addPost: Post image not uploaded...`);
+      }
+      input.image = filename;
       const [id] = await context.Post.addPost(input);
       const post = await context.Post.post(id);
       // publish for post list
@@ -80,6 +107,7 @@ export default (pubsub: PubSub) => ({
         }
       });
       return post;
+
     },
     async deletePost(obj: any, { id }: Identifier, context: any) {
       const post = await context.Post.post(id);
