@@ -5,6 +5,7 @@ exports.up = function(knex, Promise) {
         table.increments();
         table.string('title');
         table.string('content');
+        table.string('image');
         table.timestamps(false, true);
       })
       .createTable('comment', table => {
