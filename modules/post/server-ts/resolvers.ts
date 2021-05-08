@@ -87,7 +87,7 @@ export default (pubsub: PubSub) => ({
         input.image.map(async uploadPromise => {
           var {filename: fileName} = await uploadPromise;
           filename = fileName;
-          fileSystemStorage.save(await uploadPromise, settings.upload.postUploadDir);
+          fileSystemStorage.save(await uploadPromise, settings.upload.postUploadDir, false);
         })
       );
 
