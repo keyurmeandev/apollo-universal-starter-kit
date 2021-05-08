@@ -1,7 +1,6 @@
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import { createBatchResolver } from 'graphql-resolve-batch';
 import fileSystemStorage, { UploadFileStream } from './FileSystemStorage';
-// import { UploadFileStream } from '@gqlapp/upload-server-ts';
 import settings from '@gqlapp/config';
 
 // interfaces
@@ -77,11 +76,6 @@ export default (pubsub: PubSub) => ({
   },
   Mutation: {
     async addPost(obj: any, { input }: PostInput, context: any) {
-      // console.log(`server side called resolver: **************`, input);
-      // load files to fs
-      // const uploadedImage = await Promise.all(
-      //   fileSystemStorage.save(await input.image, settings.upload.postUploadDir)
-      // );
       var filename = '';
       const uploadedImage = await Promise.all(
         input.image.map(async uploadPromise => {
