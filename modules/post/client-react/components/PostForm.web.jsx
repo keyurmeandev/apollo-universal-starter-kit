@@ -4,7 +4,7 @@ import { withFormik } from 'formik';
 import { translate } from '@gqlapp/i18n-client-react';
 import { FieldAdapter as Field } from '@gqlapp/forms-client-react';
 import { required, validate } from '@gqlapp/validation-common-react';
-import { Form, RenderField, Media, Button, Table, Alert } from '@gqlapp/look-client-react';
+import { Form, RenderField, Media, Button } from '@gqlapp/look-client-react';
 import { FormGroup, Label, Input } from 'reactstrap';
 
 const postFormSchema = {
@@ -15,7 +15,8 @@ const postFormSchema = {
 };
 
 const PostForm = ({ values, handleSubmit, setFieldValue, submitting, t }) => {
-  const [image, setImage] = useState(values.image ? `/public/post/${values.image}` : null);
+  const [image, setImage] = useState();
+  const oldData = values.image;
 
   const handleImage = function(ev) {
     ev.preventDefault();
@@ -30,7 +31,6 @@ const PostForm = ({ values, handleSubmit, setFieldValue, submitting, t }) => {
     };
   };
 
-  console.log(values,image);
   return (
     <Form name="post" onSubmit={handleSubmit}>
       <Field name="title" component={RenderField} type="text" label={t('post.field.title')} value={values.title} />
@@ -42,12 +42,25 @@ const PostForm = ({ values, handleSubmit, setFieldValue, submitting, t }) => {
         value={values.content}
       />
       <div style={{ height: '200px' }}>
-        <Media object data-src={image} src={image} alt="Generic" style={{ height: '100%' }} />
+        <Media
+          object
+          data-src={image || `http://localhost:8080/public/post/${values.image}`}
+          src={image || `http://localhost:8080/public/post/${values.image}`}
+          alt="Generic"
+          style={{ height: '100%' }}
+        />
       </div>
 
       <FormGroup>
         <Label for="exampleFile">Image</Label>
-        <Input type="file" accept="image/*" name="image" id="image" onChange={handleImage} value={values.image} />
+        <Input
+          type="file"
+          accept="image/*"
+          name="image"
+          id="image"
+          onChange={handleImage}
+          value={!oldData ? values.image : undefined}
+        />
       </FormGroup>
       <Button color="primary" type="submit" disabled={submitting}>
         {t('post.btn.submit')}
@@ -71,7 +84,7 @@ const PostFormWithFormik = withFormik({
   mapPropsToValues: props => ({
     title: props.post && props.post.title,
     content: props.post && props.post.content,
-    image: props.image && props.post.image,
+    image: props.post && props.post.image,
     file: null
   }),
   validate: values => {
