@@ -1,6 +1,7 @@
 import { PubSub, withFilter } from 'graphql-subscriptions';
 import { createBatchResolver } from 'graphql-resolve-batch';
 import fileSystemStorage, { UploadFileStream } from './FileSystemStorage';
+// import { UploadFileStream } from '@gqlapp/upload-server-ts';
 import settings from '@gqlapp/config';
 
 // interfaces
@@ -25,7 +26,7 @@ interface PostInput {
 }
 
 interface PostInputWithId {
-  input: Post & Identifier;
+  input: Post & Identifier & UploadFileStreams;
 }
 
 interface CommentInput {
@@ -76,21 +77,20 @@ export default (pubsub: PubSub) => ({
   },
   Mutation: {
     async addPost(obj: any, { input }: PostInput, context: any) {
-      var filename = '';
+      let filename = '';
       const uploadedImage = await Promise.all(
         input.image.map(async uploadPromise => {
-          var {filename: fileName} = await uploadPromise;
+          const { filename: fileName } = await uploadPromise;
           filename = fileName;
           fileSystemStorage.save(await uploadPromise, settings.upload.postUploadDir, false);
         })
       );
 
-      if(!uploadedImage){
-        console.log(`***Error*** addPost: Post image not uploaded...`);
-        throw new Error(`***Error*** addPost: Post image not uploaded...`);
+      if (!uploadedImage) {
+        throw new Error(`**Error** addPost: Post image not uploaded...`);
       }
-      input.image = filename;
-      const [id] = await context.Post.addPost(input);
+
+      const [id] = await context.Post.addPost({ ...input, image: filename });
       const post = await context.Post.post(id);
       // publish for post list
       pubsub.publish(POSTS_SUBSCRIPTION, {
@@ -101,7 +101,6 @@ export default (pubsub: PubSub) => ({
         }
       });
       return post;
-
     },
     async deletePost(obj: any, { id }: Identifier, context: any) {
       const post = await context.Post.post(id);
@@ -129,7 +128,25 @@ export default (pubsub: PubSub) => ({
       }
     },
     async editPost(obj: any, { input }: PostInputWithId, context: any) {
-      await context.Post.editPost(input);
+      let filename;
+      if (input.image) {
+        // adding new image
+        const uploadedImage = await Promise.all(
+          input.image.map(async uploadPromise => {
+            const { filename: fileName } = await uploadPromise;
+            filename = fileName;
+            fileSystemStorage.save(await uploadPromise, settings.upload.postUploadDir, false);
+          })
+        );
+        // if image is not uploaded
+        if (!uploadedImage) {
+          throw new Error(`**Error** updatePost: Post image not uploaded...`);
+        }
+        const { image: oldImage } = await context.Post.post(input.id);
+        fileSystemStorage.delete(`${settings.upload.postUploadDir}/${oldImage}`);
+      }
+
+      await context.Post.editPost({ ...input, image: filename });
       const post = await context.Post.post(input.id);
       // publish for post list
       pubsub.publish(POSTS_SUBSCRIPTION, {

@@ -58,10 +58,10 @@ export default class PostDAO {
       .del();
   }
 
-  public editPost({ id, title, content }: Post & Identifier) {
+  public editPost({ id, title, content, image }: Post & Identifier) {
     return knex('post')
       .where('id', '=', id)
-      .update({ title, content });
+      .update({ title, content, image });
   }
 
   public addComment({ content, postId }: Comment) {

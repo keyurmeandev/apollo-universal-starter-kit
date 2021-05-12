@@ -66,6 +66,7 @@ input EditPostInput {
   id: Int!
   title: String!
   content: String!
+  image: [FileUpload]!
 }
 
 # Input for addComment Mutation
